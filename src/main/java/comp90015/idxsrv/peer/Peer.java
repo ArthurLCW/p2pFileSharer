@@ -11,6 +11,8 @@ import comp90015.idxsrv.server.IOThread;
 import comp90015.idxsrv.textgui.ISharerGUI;
 
 ///
+import comp90015.idxsrv.textgui.ITerminalLogger;
+
 import comp90015.idxsrv.peer.InitSocketToServer;
 
 /**
@@ -33,9 +35,10 @@ public class Peer implements IPeer {
 	private int port;
 
 	/////
+	private ITerminalLogger logger;
 	private Socket client;
 
-	private String ip="local"; //TODO: cwli: this ip needs to be obtained from config. Perhaps wxh needs to finish how to get ip.
+	private String ip;
 
 	public Peer(int port, String basedir, int socketTimeout, ISharerGUI tgui) throws IOException {
 		this.tgui=tgui;
@@ -46,7 +49,7 @@ public class Peer implements IPeer {
 		ioThread.start();
 
 		////
-		InitSocketToServer connector = new InitSocketToServer(ip, port, timeout);
+		InitSocketToServer connector = new InitSocketToServer("localhost", 3200, timeout);//TODO: cwli: ip/port
 		client = connector.GenerateSocket();
 		System.out.println("wawawwwwwwwwwwwwwwwwwwwww");
 	}
