@@ -54,7 +54,7 @@ public class Filesharer {
     	 * So called "in the clear" password style security - not a very good way to
     	 * secure things these days...
     	 */
-    	
+
     	String secret = "sharer123"; // the secret used by this peer to share files
     	String serverSecret = "server123"; // the secret used by the index server, to gain access
     	
@@ -64,7 +64,8 @@ public class Filesharer {
     	 */
     	InetAddress address = InetAddress.getByName("localhost"); // default hostname of this peer
     	InetAddress idxSrvAddress = InetAddress.getByName("localhost"); // default hostname of the index server
-    	int idxSrvPort = 3200; // the port of the index server
+		// InetAddress idxSrvAddress = InetAddress.getByName("172.26.130.185"); // hostname of the cloud index server
+		int idxSrvPort = 3200; // the port of the index server
 		int port = 3201; // the port this peer uses for other peers to connect to
 		int timeout = 1000; // the default socket timeout in milliseconds for idle sockets
     	
