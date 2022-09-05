@@ -10,6 +10,9 @@ import java.util.concurrent.LinkedBlockingDeque;
 import comp90015.idxsrv.server.IOThread;
 import comp90015.idxsrv.textgui.ISharerGUI;
 
+///
+import comp90015.idxsrv.peer.InitSocketToServer;
+
 /**
  * Skeleton Peer class to be completed for Project 1.
  * @author aaron
@@ -28,7 +31,12 @@ public class Peer implements IPeer {
 	private int timeout;
 	
 	private int port;
-	
+
+	/////
+	private Socket client;
+
+	private String ip="local"; //TODO: cwli: this ip needs to be obtained from config. Perhaps wxh needs to finish how to get ip.
+
 	public Peer(int port, String basedir, int socketTimeout, ISharerGUI tgui) throws IOException {
 		this.tgui=tgui;
 		this.port=port;
@@ -36,6 +44,11 @@ public class Peer implements IPeer {
 		this.basedir=new File(basedir).getCanonicalPath();
 		ioThread = new IOThread(port,incomingConnections,socketTimeout,tgui);
 		ioThread.start();
+
+		////
+		InitSocketToServer connector = new InitSocketToServer(ip, port, timeout);
+		client = connector.GenerateSocket();
+		System.out.println("wawawwwwwwwwwwwwwwwwwwwww");
 	}
 	
 	public void shutdown() throws InterruptedException, IOException {
