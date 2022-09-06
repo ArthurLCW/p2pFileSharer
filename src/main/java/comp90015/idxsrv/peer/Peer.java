@@ -1,12 +1,13 @@
 package comp90015.idxsrv.peer;
 
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import comp90015.idxsrv.message.*;
 import comp90015.idxsrv.server.IOThread;
 import comp90015.idxsrv.textgui.ISharerGUI;
 
@@ -35,10 +36,11 @@ public class Peer implements IPeer {
 	private int port;
 
 	/////
-	private ITerminalLogger logger;
 	private Socket client;
 
 	private String ip;
+
+	private String secret;
 
 	public Peer(int port, String basedir, int socketTimeout, ISharerGUI tgui) throws IOException {
 		this.tgui=tgui;
@@ -49,11 +51,17 @@ public class Peer implements IPeer {
 		ioThread.start();
 
 		////
-		InitSocketToServer connector = new InitSocketToServer("localhost", 3200, timeout);//TODO: cwli: ip/port
-		client = connector.GenerateSocket();
-		System.out.println("wawawwwwwwwwwwwwwwwwwwwww");
+		InitSocketToServer connector = new InitSocketToServer("localhost", 3200, timeout, tgui);//TODO: cwli: ip/port
+		try {
+			client = connector.GenerateSocket();
+		} catch (JsonSerializationException e) {
+			throw new RuntimeException(e);
+		}
 	}
-	
+
+
+
+
 	public void shutdown() throws InterruptedException, IOException {
 		ioThread.shutdown();
 		ioThread.interrupt();
@@ -88,6 +96,8 @@ public class Peer implements IPeer {
 	@Override
 	public void downloadFromPeers(String relativePathname, SearchRecord searchRecord) {
 		tgui.logError("downloadFromPeers unimplemented");
+
 	}
-	
+
+
 }
