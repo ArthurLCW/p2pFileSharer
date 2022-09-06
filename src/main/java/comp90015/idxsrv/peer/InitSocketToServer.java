@@ -23,8 +23,23 @@ public class InitSocketToServer {
 
     private ISharerGUI tgui;
 
+
 //    public DataOutputStream output;
 //    public DataInputStream input;
+
+    public BufferedWriter bufferedWriter;
+    public BufferedReader bufferedReader;
+
+//    {
+//        try {
+//            bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
+//            bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+
+
 
 
     public InitSocketToServer(String ip, int port, int timeout, ISharerGUI tgui){
@@ -44,16 +59,19 @@ public class InitSocketToServer {
     }
 
     //TODO: deal with request?
-    public void buildConnection() throws IOException, JsonSerializationException {
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-        BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
-        if (ReadingWelcomeMsg(bufferedReader)) {
-            sendingAuthenticateRequest(bufferedWriter);
+    private void buildConnection() throws IOException, JsonSerializationException {
+//        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+//        BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
+        bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
+        bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+        if (ReadingWelcomeMsg()) {
+            sendingAuthenticateRequest();
         }
+        sendingRequestGeneral(new GoodBye());
     }
 
-    public boolean ReadingWelcomeMsg(BufferedReader bufferedReader) throws JsonSerializationException, IOException {
-        Message msg = readMsg(bufferedReader);
+    private boolean ReadingWelcomeMsg() throws JsonSerializationException, IOException {
+        Message msg = readMsg();
         if(msg.getClass().getName()== WelcomeMsg.class.getName()) {
             tgui.logInfo("Received welcome message from server. ");
             return true;
@@ -63,19 +81,31 @@ public class InitSocketToServer {
         }
     }
 
-    public void sendingAuthenticateRequest(BufferedWriter bufferedWriter) throws IOException {
+    private void sendingAuthenticateRequest() throws IOException {
         AuthenticateRequest authRequest = new AuthenticateRequest("server123");//TODO: secret setting
-        writeMsg(bufferedWriter, authRequest);
+        writeMsg(authRequest);
+        tgui.logInfo("Finish sending authentication to server. ");
     }
 
-    private void writeMsg(BufferedWriter bufferedWriter, Message msg) throws IOException {
+    // public void sendingRequestGeneral
+    public void sendingRequestGeneral(Message msg) throws IOException {
+        writeMsg(msg);
+        tgui.logInfo("Finish sending message to server: . "+msg.getClass().toString());
+    }
+    public void readingRequestGeneral() throws IOException, JsonSerializationException {
+        Message msg = readMsg();
+        tgui.logInfo("Finish reading message from server: . "+msg.getClass().toString());
+    }
+
+
+    private void writeMsg(Message msg) throws IOException {
         tgui.logDebug("sending: "+msg.toString());
         bufferedWriter.write(msg.toString());
         bufferedWriter.newLine();
         bufferedWriter.flush();
     }
 
-    private Message readMsg(BufferedReader bufferedReader) throws IOException, JsonSerializationException {
+    private Message readMsg() throws IOException, JsonSerializationException {
         String jsonStr = bufferedReader.readLine();
         if(jsonStr!=null) {
             Message msg = (Message) MessageFactory.deserialize(jsonStr);
