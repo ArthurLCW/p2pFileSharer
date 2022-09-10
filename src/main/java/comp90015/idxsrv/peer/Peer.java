@@ -12,6 +12,7 @@ import comp90015.idxsrv.filemgr.FileDescr;
 import comp90015.idxsrv.filemgr.FileMgr;
 import comp90015.idxsrv.message.*;
 import comp90015.idxsrv.server.IOThread;
+import comp90015.idxsrv.server.IndexElement;
 import comp90015.idxsrv.textgui.ISharerGUI;
 
 /**
@@ -97,7 +98,27 @@ public class Peer implements IPeer {
 			InetAddress idxAddress, 
 			int idxPort, 
 			String idxSecret) {
-		tgui.logError("searchIdxServer unimplemented");
+		try (Socket socket = new Socket(idxAddress, idxPort)){
+			InputStream inputStream = socket.getInputStream();
+			OutputStream outputStream = socket.getOutputStream();
+			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+			BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8));
+
+			readMsg(bufferedReader);
+			writeMsg(bufferedWriter, new AuthenticateRequest(idxSecret));
+			AuthenticateReply authenticateReply = (AuthenticateReply) readMsg(bufferedReader);
+
+			SearchRequest searchRequest = new SearchRequest(maxhits, keywords);
+			writeMsg(bufferedWriter, searchRequest);
+			SearchReply searchReply = (SearchReply) readMsg(bufferedReader);
+			tgui.logDebug(searchReply.toString());
+		}catch (Exception e){
+			tgui.logError("search failed...");
+			e.printStackTrace();
+		}finally {
+			tgui.logInfo("search file done");
+		}
+
 	}
 
 	@Override
