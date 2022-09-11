@@ -15,6 +15,8 @@ import comp90015.idxsrv.server.IOThread;
 import comp90015.idxsrv.server.IndexElement;
 import comp90015.idxsrv.textgui.ISharerGUI;
 
+
+
 /**
  * Skeleton Peer class to be completed for Project 1.
  * @author aaron
@@ -37,6 +39,8 @@ public class Peer implements IPeer {
 	private int serverPort;
 
 	private ServerSocket serverSocket;
+
+	private int blockLength;
 	
 	public Peer(int port, String basedir, int socketTimeout, ISharerGUI tgui) throws IOException {
 		this.tgui=tgui;
@@ -48,6 +52,11 @@ public class Peer implements IPeer {
 		ioThread.start();
 		serverSocket = new ServerSocket(0);
 		serverPort = serverSocket.getLocalPort();
+
+		blockLength = 16 * 1024 * 1024;
+		P2PServerRequestThread requestThread = new P2PServerRequestThread(incomingConnections, tgui, port,
+				timeout, blockLength);
+		requestThread.start();
 	}
 	
 	public void shutdown() throws InterruptedException, IOException {
@@ -136,7 +145,24 @@ public class Peer implements IPeer {
 
 	@Override
 	public void downloadFromPeers(String relativePathname, SearchRecord searchRecord) {
-		tgui.logError("downloadFromPeers unimplemented");
+		tgui.logError("downloadFromPeers implemented");
+		String targetIP = searchRecord.idxSrvAddress.toString();
+		int targetPort = searchRecord.idxSrvPort;
+		FileDescr fileDescr = searchRecord.fileDescr;
+		String fileMd5 = fileDescr.getFileMd5();
+		String idxSrvSecret = searchRecord.idxSrvSecret;
+
+		tgui.logInfo(targetIP+" "+targetPort+" "+fileMd5+" "+relativePathname);
+		// TODO: the ip and port obtained here is the ip/port of server, NOT the ip/port of sharer!!!!
+
+		P2PClientThread client = null;
+		try {
+			client = new P2PClientThread("localhost", 3201, timeout, tgui, relativePathname,
+					fileMd5, blockLength); // todo: change parameters after former possible bugs fixed!
+		} catch (IOException e) {
+			tgui.logInfo("P2P client: "+e.toString());
+		}
+		client.start();
 	}
 
 	private void writeMsg(BufferedWriter bufferedWriter, Message msg) throws IOException {
