@@ -107,11 +107,18 @@ public class Peer implements IPeer {
 			readMsg(bufferedReader);
 			writeMsg(bufferedWriter, new AuthenticateRequest(idxSecret));
 			AuthenticateReply authenticateReply = (AuthenticateReply) readMsg(bufferedReader);
+			tgui.logDebug(authenticateReply.toString());
 
 			SearchRequest searchRequest = new SearchRequest(maxhits, keywords);
 			writeMsg(bufferedWriter, searchRequest);
 			SearchReply searchReply = (SearchReply) readMsg(bufferedReader);
-			tgui.logDebug(searchReply.toString());
+
+			for (int i = 0; i < searchReply.hits.length; i++){
+				IndexElement hit = searchReply.hits[i];
+				SearchRecord searchRecord = new SearchRecord(hit.fileDescr, searchReply.seedCounts[i], idxAddress,
+						idxPort, idxSecret, hit.secret);
+				tgui.addSearchHit(searchReply.hits[i].filename, searchRecord);
+			}
 		}catch (Exception e){
 			tgui.logError("search failed...");
 			e.printStackTrace();
