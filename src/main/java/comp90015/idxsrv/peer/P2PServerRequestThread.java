@@ -43,6 +43,7 @@ public class P2PServerRequestThread extends Thread{
                 while (incomingConnections.size()==0){
                 }
                 socket = incomingConnections.take();
+                socket.setSoTimeout(timeout);
                 tgui.logInfo("P2P server: receive request from "+socket.getInetAddress().toString()+": "+socket.getPort());
 
                 bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
@@ -52,14 +53,13 @@ public class P2PServerRequestThread extends Thread{
 
                 while (true){
                     while (!bufferedReader.ready()){ // detect if there is message sent
-                    };
+                    }; // todo: delete for testing timeout
                     Message msg = readMsg();
                     if(msg.getClass().getName() == BlockRequest.class.getName()) {
                         BlockRequest blockRequest = (BlockRequest) msg;
                         String filename = blockRequest.filename;
                         String fileMd5 = blockRequest.fileMd5;
                         int blockIdx = (int)blockRequest.blockIdx;
-                        //tgui.logInfo("P2P server: Received block request msg from client, "+filename+" "+fileMd5+" "+blockIdx);
 
                         try{
                             file = new RandomAccessFile(filename, "rw");
@@ -67,21 +67,15 @@ public class P2PServerRequestThread extends Thread{
                             tgui.logWarn(e.toString());
                         }
                         FileDescr fileDescr = new FileDescr(file, blockLength);
-//                        tgui.logInfo("file MD5: "+fileDescr.getFileMd5());
-//                        tgui.logInfo("block MD5: "+fileDescr.getBlockMd5(blockIdx));
-//                        tgui.logInfo("place 1, "+fileDescr.getNumBlockBytes(blockIdx));
                         FileMgr fileMgr = new FileMgr(filename, fileDescr);
 
                         int blockNum = fileDescr.getNumBlocks();
 
                         if (blockIdx<blockNum){
                             byte[] sendingBuffer = fileMgr.readBlock(blockIdx);
-//                            tgui.logInfo("place 11, "+sendingBuffer.length);
                             String bytes = Base64.getEncoder().encodeToString(sendingBuffer);
-//                            tgui.logInfo("place 2");
                             BlockReply blockReply = new BlockReply(filename, fileMd5, blockIdx, bytes);
                             writeMsg(blockReply);
-                            //tgui.logInfo("P2P server: Block "+blockIdx+" send block reply msg "+filename+" "+fileMd5+" "+blockIdx+" "+bytes);
 
                         }else if (blockIdx == blockNum){
                             writeMsg(new GoodBye());

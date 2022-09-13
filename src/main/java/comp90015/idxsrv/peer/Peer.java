@@ -185,12 +185,11 @@ public class Peer implements IPeer {
 		String idxSrvSecret = searchRecord.idxSrvSecret;
 
 		tgui.logInfo(targetIP+" "+targetPort+" "+fileMd5+" "+relativePathname);
-		// TODO: the ip and port obtained here is the ip/port of server, NOT the ip/port of sharer!!!!
 
 		P2PClientThread client = null;
 		try {
-			client = new P2PClientThread("localhost", 3201, timeout, tgui, relativePathname,
-					fileMd5, blockLength); // todo: change parameters after former possible bugs fixed!
+			client = new P2PClientThread(targetIP, targetPort, timeout, tgui, relativePathname,
+					fileMd5);
 		} catch (IOException e) {
 			tgui.logInfo("P2P client: "+e.toString());
 		}
