@@ -124,8 +124,10 @@ public class Peer implements IPeer {
 
 			for (int i = 0; i < searchReply.hits.length; i++){
 				IndexElement hit = searchReply.hits[i];
-				SearchRecord searchRecord = new SearchRecord(hit.fileDescr, searchReply.seedCounts[i], idxAddress,
-						idxPort, idxSecret, hit.secret);
+				InetAddress peerAddress=socket.getLocalAddress();
+				int peerPort = serverSocket.getLocalPort();
+				SearchRecord searchRecord = new SearchRecord(hit.fileDescr, searchReply.seedCounts[i], peerAddress,
+						peerPort, idxSecret, hit.secret);
 				tgui.addSearchHit(searchReply.hits[i].filename, searchRecord);
 			}
 		}catch (Exception e){
@@ -139,6 +141,7 @@ public class Peer implements IPeer {
 
 	@Override
 	public boolean dropShareWithIdxServer(String relativePathname, ShareRecord shareRecord) {
+
 		tgui.logError("dropShareWithIdxServer unimplemented");
 		return false;
 	}
