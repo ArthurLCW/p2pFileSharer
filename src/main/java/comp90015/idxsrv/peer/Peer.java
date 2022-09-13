@@ -125,7 +125,7 @@ public class Peer implements IPeer {
 			for (int i = 0; i < searchReply.hits.length; i++){
 				IndexElement hit = searchReply.hits[i];
 				InetAddress peerAddress=socket.getLocalAddress();
-				int peerPort = serverSocket.getLocalPort();
+				int peerPort = port;
 				SearchRecord searchRecord = new SearchRecord(hit.fileDescr, searchReply.seedCounts[i], peerAddress,
 						peerPort, idxSecret, hit.secret);
 				tgui.addSearchHit(searchReply.hits[i].filename, searchRecord);
@@ -141,8 +141,37 @@ public class Peer implements IPeer {
 
 	@Override
 	public boolean dropShareWithIdxServer(String relativePathname, ShareRecord shareRecord) {
+		InetAddress idxAddress = shareRecord.idxSrvAddress;
+		int idxPort = shareRecord.idxSrvPort;
+		String idxSecret = shareRecord.idxSrvSecret;
+		try (Socket socket = new Socket(idxAddress, idxPort)) {
+			InputStream inputStream = socket.getInputStream();
+			OutputStream outputStream = socket.getOutputStream();
+			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+			BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8));
 
-		tgui.logError("dropShareWithIdxServer unimplemented");
+			readMsg(bufferedReader);
+			writeMsg(bufferedWriter, new AuthenticateRequest(idxSecret));
+			AuthenticateReply authenticateReply = (AuthenticateReply) readMsg(bufferedReader);
+			tgui.logDebug(authenticateReply.toString());
+			String split = System.getProperty("os.name").toLowerCase().contains("windows") ? "\\\\": "/";
+			String[] splitStr = relativePathname.split(split);
+			String filename = splitStr[splitStr.length-1];
+			String fileMd5 = shareRecord.fileMgr.getFileDescr().getFileMd5();
+			String sharerSecret = shareRecord.sharerSecret;
+			DropShareRequest dropShareRequest = new DropShareRequest(filename, fileMd5, sharerSecret, serverPort);
+			writeMsg(bufferedWriter, dropShareRequest);
+			DropShareReply dropShareReply = (DropShareReply) readMsg(bufferedReader);
+			tgui.logDebug(dropShareReply.toString() );
+			return dropShareReply.success;
+
+
+		}catch (Exception e){
+			tgui.logError("drop failed...");
+			e.printStackTrace();
+		}finally {
+			tgui.logInfo("drop file done");
+		}
 		return false;
 	}
 
