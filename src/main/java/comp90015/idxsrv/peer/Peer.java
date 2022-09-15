@@ -125,7 +125,7 @@ public class Peer implements IPeer {
 			for (int i = 0; i < searchReply.hits.length; i++){
 				IndexElement hit = searchReply.hits[i];
 				InetAddress hitip = InetAddress.getByName(hit.ip);
-				SearchRecord searchRecord = new SearchRecord(hit.fileDescr, searchReply.seedCounts[i], hitip, 3201,
+				SearchRecord searchRecord = new SearchRecord(hit.fileDescr, searchReply.seedCounts[i], hitip, hit.port,
 						idxSecret, hit.secret);
 				tgui.addSearchHit(searchReply.hits[i].filename, searchRecord);
 			}
