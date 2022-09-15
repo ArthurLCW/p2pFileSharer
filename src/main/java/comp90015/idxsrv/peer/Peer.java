@@ -107,12 +107,12 @@ public class Peer implements IPeer {
 			InetAddress idxAddress, 
 			int idxPort, 
 			String idxSecret) {
+		tgui.clearSearchHits();
 		try (Socket socket = new Socket(idxAddress, idxPort)){
 			InputStream inputStream = socket.getInputStream();
 			OutputStream outputStream = socket.getOutputStream();
 			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
 			BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8));
-
 			readMsg(bufferedReader);
 			writeMsg(bufferedWriter, new AuthenticateRequest(idxSecret));
 			AuthenticateReply authenticateReply = (AuthenticateReply) readMsg(bufferedReader);
@@ -124,10 +124,9 @@ public class Peer implements IPeer {
 
 			for (int i = 0; i < searchReply.hits.length; i++){
 				IndexElement hit = searchReply.hits[i];
-				InetAddress peerAddress=socket.getLocalAddress();
-				int peerPort = port;
-				SearchRecord searchRecord = new SearchRecord(hit.fileDescr, searchReply.seedCounts[i], peerAddress,
-						peerPort, idxSecret, hit.secret);
+				InetAddress hitip = InetAddress.getByName(hit.ip);
+				SearchRecord searchRecord = new SearchRecord(hit.fileDescr, searchReply.seedCounts[i], hitip, 3201,
+						idxSecret, hit.secret);
 				tgui.addSearchHit(searchReply.hits[i].filename, searchRecord);
 			}
 		}catch (Exception e){
