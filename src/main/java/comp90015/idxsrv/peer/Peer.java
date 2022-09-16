@@ -50,7 +50,7 @@ public class Peer implements IPeer {
 		ioThread.start();
 
 		blockLength = 1024 * 1024; // TODO: need to be further tested and modified by wxh
-		// We have implemented PARALLEL download. multiple peers can download from the same sharer CONCURRENTLY.
+		/**We have implemented PARALLEL download. multiple peers can download from the same sharer CONCURRENTLY.*/
 		P2PServerPoolThread requestThread = new P2PServerPoolThread(incomingConnections, tgui, port,
 				timeout, blockLength);
 		requestThread.start();
