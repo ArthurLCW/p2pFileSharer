@@ -49,8 +49,9 @@ public class Peer implements IPeer {
 		ioThread = new IOThread(port,incomingConnections,socketTimeout,tgui);
 		ioThread.start();
 
-		blockLength = 16 * 1024 * 1024;
-		P2PServerRequestThread requestThread = new P2PServerRequestThread(incomingConnections, tgui, port,
+		blockLength = 1024 * 1024; // TODO: need to be further tested and modified by wxh
+		// We have implemented PARALLEL download. multiple peers can download from the same sharer CONCURRENTLY.
+		P2PServerPoolThread requestThread = new P2PServerPoolThread(incomingConnections, tgui, port,
 				timeout, blockLength);
 		requestThread.start();
 	}
@@ -183,12 +184,12 @@ public class Peer implements IPeer {
 			LookupRequest lookupRequest = new LookupRequest(relativePathname, searchRecord.fileDescr.getFileMd5());
 			writeMsg(bufferedWriter, lookupRequest);
 			LookupReply lookupReply = (LookupReply) readMsg(bufferedReader);
-			IndexElement[] hits = lookupReply.hits; // may contains multiple sharer...
+			IndexElement[] hits = lookupReply.hits;
 
 			long numSharers = searchRecord.numSharers;
 
 			Random rd = new Random();
-			IndexElement sharerInfo = hits[rd.nextInt((int)numSharers)];// todo: choose a sharer
+			IndexElement sharerInfo = hits[rd.nextInt((int)numSharers)];// todo: try choose a sharer based on how busy it is.
 			String targetIP = sharerInfo.ip;
 			int targetPort = sharerInfo.port;
 			tgui.logInfo("P2P client: get sharers info: ip "+targetIP+" port "+targetPort);
@@ -207,23 +208,6 @@ public class Peer implements IPeer {
 			tgui.logError("P2P client: " + e.toString());
 			tgui.logError("Failed to build connection between peer and server...");
 		}
-//
-//
-//
-//		FileDescr fileDescr = searchRecord.fileDescr;
-//		String fileMd5 = fileDescr.getFileMd5();
-//		String idxSrvSecret = searchRecord.idxSrvSecret;
-//
-//		tgui.logInfo(targetIP+" "+targetPort+" "+fileMd5+" "+relativePathname);
-//
-//		P2PClientThread client = null;
-//		try {
-//			client = new P2PClientThread(targetIP, targetPort, timeout, tgui, relativePathname,
-//					fileMd5);
-//		} catch (IOException e) {
-//			tgui.logInfo("P2P client: "+e.toString());
-//		}
-//		client.start();
 	}
 
 	private void writeMsg(BufferedWriter bufferedWriter, Message msg) throws IOException {

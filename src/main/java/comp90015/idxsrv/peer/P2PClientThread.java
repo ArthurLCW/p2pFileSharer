@@ -1,7 +1,5 @@
 package comp90015.idxsrv.peer;
 
-import comp90015.idxsrv.filemgr.FileDescr;
-import comp90015.idxsrv.filemgr.FileMgr;
 import comp90015.idxsrv.message.*;
 import comp90015.idxsrv.textgui.ISharerGUI;
 
@@ -69,8 +67,6 @@ public class P2PClientThread extends Thread{
                     BlockRequest blockRequest = new BlockRequest(filename, fileMd5, (Integer)blockIdx);
                     writeMsg(blockRequest);
 
-//                    while (!bufferedReader.ready()){ // detect if there is message sent
-//                    }; // todo: delete for testing timeout
                     Message msg = readMsg();
 
                     if (msg.getClass().getName() == BlockReply.class.getName()) {
@@ -95,9 +91,9 @@ public class P2PClientThread extends Thread{
                 socket.close();
                 break;
             } catch (IOException e) {
-                tgui.logWarn("P2P client: "+e.toString());
+                tgui.logError("P2P client: "+e.toString());
             } catch (JsonSerializationException e) {
-                tgui.logWarn("P2P client: "+e.toString());
+                tgui.logError("P2P client: "+e.toString());
             }
         }
     }
