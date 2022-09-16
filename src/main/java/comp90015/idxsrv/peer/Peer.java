@@ -37,10 +37,6 @@ public class Peer implements IPeer {
 	
 	private int port;
 
-	private int serverPort;
-
-	private ServerSocket serverSocket;
-
 	private int blockLength;
 	
 	public Peer(int port, String basedir, int socketTimeout, ISharerGUI tgui) throws IOException {
@@ -51,8 +47,6 @@ public class Peer implements IPeer {
 		incomingConnections = new LinkedBlockingDeque<Socket>();
 		ioThread = new IOThread(port,incomingConnections,socketTimeout,tgui);
 		ioThread.start();
-		serverSocket = new ServerSocket(0);
-		serverPort = serverSocket.getLocalPort();
 
 		blockLength = 16 * 1024 * 1024;
 		P2PServerRequestThread requestThread = new P2PServerRequestThread(incomingConnections, tgui, port,
@@ -86,7 +80,7 @@ public class Peer implements IPeer {
 			RandomAccessFile randomAccessFile = new RandomAccessFile(file,"rw");
 			FileDescr fileDescr = new FileDescr(randomAccessFile);
 			String filename = file.getName();
-			ShareRequest shareRequest = new ShareRequest(fileDescr, filename,shareSecret,serverPort);
+			ShareRequest shareRequest = new ShareRequest(fileDescr, filename,shareSecret,port);
 			writeMsg(bufferedWriter, shareRequest);
 			ShareReply shareReply = (ShareReply) readMsg(bufferedReader);
 			tgui.logDebug(shareReply.toString());
@@ -159,7 +153,7 @@ public class Peer implements IPeer {
 			String filename = splitStr[splitStr.length-1];
 			String fileMd5 = shareRecord.fileMgr.getFileDescr().getFileMd5();
 			String sharerSecret = shareRecord.sharerSecret;
-			DropShareRequest dropShareRequest = new DropShareRequest(filename, fileMd5, sharerSecret, serverPort);
+			DropShareRequest dropShareRequest = new DropShareRequest(filename, fileMd5, sharerSecret, port);
 			writeMsg(bufferedWriter, dropShareRequest);
 			DropShareReply dropShareReply = (DropShareReply) readMsg(bufferedReader);
 			tgui.logDebug(dropShareReply.toString() );
