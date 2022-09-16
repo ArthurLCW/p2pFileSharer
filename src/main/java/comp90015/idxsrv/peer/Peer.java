@@ -6,6 +6,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Random;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import comp90015.idxsrv.Filesharer;
@@ -186,7 +187,8 @@ public class Peer implements IPeer {
 
 			long numSharers = searchRecord.numSharers;
 
-			IndexElement sharerInfo = hits[0];// todo: choose a sharer
+			Random rd = new Random();
+			IndexElement sharerInfo = hits[rd.nextInt((int)numSharers)];// todo: choose a sharer
 			String targetIP = sharerInfo.ip;
 			int targetPort = sharerInfo.port;
 			tgui.logInfo("P2P client: get sharers info: ip "+targetIP+" port "+targetPort);
