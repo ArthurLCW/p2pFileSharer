@@ -185,7 +185,7 @@ public class Peer implements IPeer {
 			readMsg(bufferedReader);
 			writeMsg(bufferedWriter, new AuthenticateRequest(searchRecord.idxSrvSecret));
 			AuthenticateReply authenticateReply = (AuthenticateReply) readMsg(bufferedReader);
-			LookupRequest lookupRequest = new LookupRequest(searchRecord.fileDescr.getFileMd5(), relativePathname);
+			LookupRequest lookupRequest = new LookupRequest(relativePathname, searchRecord.fileDescr.getFileMd5());
 			writeMsg(bufferedWriter, lookupRequest);
 			LookupReply lookupReply = (LookupReply) readMsg(bufferedReader);
 			IndexElement[] hits = lookupReply.hits; // may contains multiple sharer...
