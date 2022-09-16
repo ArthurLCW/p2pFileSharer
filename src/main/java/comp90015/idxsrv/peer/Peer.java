@@ -176,23 +176,57 @@ public class Peer implements IPeer {
 
 	@Override
 	public void downloadFromPeers(String relativePathname, SearchRecord searchRecord) {
-		tgui.logError("downloadFromPeers implemented");
-		String targetIP = searchRecord.idxSrvAddress.toString();
-		int targetPort = searchRecord.idxSrvPort;
-		FileDescr fileDescr = searchRecord.fileDescr;
-		String fileMd5 = fileDescr.getFileMd5();
-		String idxSrvSecret = searchRecord.idxSrvSecret;
+		try (Socket socket = new Socket(searchRecord.idxSrvAddress, searchRecord.idxSrvPort)){
+			InputStream inputStream = socket.getInputStream();
+			OutputStream outputStream = socket.getOutputStream();
+			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+			BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8));
+			readMsg(bufferedReader);
+			writeMsg(bufferedWriter, new AuthenticateRequest(searchRecord.idxSrvSecret));
+			AuthenticateReply authenticateReply = (AuthenticateReply) readMsg(bufferedReader);
+			LookupRequest lookupRequest = new LookupRequest(searchRecord.fileDescr.getFileMd5(), relativePathname);
+			writeMsg(bufferedWriter, lookupRequest);
+			LookupReply lookupReply = (LookupReply) readMsg(bufferedReader);
+			IndexElement[] hits = lookupReply.hits; // may contains multiple sharer...
 
-		tgui.logInfo(targetIP+" "+targetPort+" "+fileMd5+" "+relativePathname);
+			long numSharers = searchRecord.numSharers;
 
-		P2PClientThread client = null;
-		try {
-			client = new P2PClientThread(targetIP, targetPort, timeout, tgui, relativePathname,
-					fileMd5);
-		} catch (IOException e) {
-			tgui.logInfo("P2P client: "+e.toString());
+			IndexElement sharerInfo = hits[0];// todo: choose a sharer
+			String targetIP = sharerInfo.ip;
+			int targetPort = sharerInfo.port;
+			tgui.logInfo("P2P client: get sharers info: ip "+targetIP+" port "+targetPort);
+
+			P2PClientThread client = null;
+			try {
+				client = new P2PClientThread(targetIP, targetPort, timeout, tgui, relativePathname,
+						searchRecord.fileDescr.getFileMd5());
+			} catch (IOException e) {
+				tgui.logInfo("P2P client: "+e.toString());
+			}
+			client.start();
+
+
+		}catch (Exception e){
+			tgui.logError("P2P client: " + e.toString());
+			tgui.logError("Failed to build connection between peer and server...");
 		}
-		client.start();
+//
+//
+//
+//		FileDescr fileDescr = searchRecord.fileDescr;
+//		String fileMd5 = fileDescr.getFileMd5();
+//		String idxSrvSecret = searchRecord.idxSrvSecret;
+//
+//		tgui.logInfo(targetIP+" "+targetPort+" "+fileMd5+" "+relativePathname);
+//
+//		P2PClientThread client = null;
+//		try {
+//			client = new P2PClientThread(targetIP, targetPort, timeout, tgui, relativePathname,
+//					fileMd5);
+//		} catch (IOException e) {
+//			tgui.logInfo("P2P client: "+e.toString());
+//		}
+//		client.start();
 	}
 
 	private void writeMsg(BufferedWriter bufferedWriter, Message msg) throws IOException {
