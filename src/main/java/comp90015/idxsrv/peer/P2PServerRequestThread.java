@@ -52,8 +52,8 @@ public class P2PServerRequestThread extends Thread{
                 RandomAccessFile file = null;
 
                 while (true){
-                    while (!bufferedReader.ready()){ // detect if there is message sent
-                    }; // todo: delete for testing timeout
+//                    while (!bufferedReader.ready()){ // detect if there is message sent
+//                    }; // todo: delete for testing timeout
                     Message msg = readMsg();
                     if(msg.getClass().getName() == BlockRequest.class.getName()) {
                         BlockRequest blockRequest = (BlockRequest) msg;

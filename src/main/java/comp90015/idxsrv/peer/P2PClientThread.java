@@ -69,8 +69,8 @@ public class P2PClientThread extends Thread{
                     BlockRequest blockRequest = new BlockRequest(filename, fileMd5, (Integer)blockIdx);
                     writeMsg(blockRequest);
 
-                    while (!bufferedReader.ready()){ // detect if there is message sent
-                    }; // todo: delete for testing timeout
+//                    while (!bufferedReader.ready()){ // detect if there is message sent
+//                    }; // todo: delete for testing timeout
                     Message msg = readMsg();
 
                     if (msg.getClass().getName() == BlockReply.class.getName()) {
