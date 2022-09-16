@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import comp90015.idxsrv.Filesharer;
 import comp90015.idxsrv.filemgr.FileDescr;
 import comp90015.idxsrv.filemgr.FileMgr;
 import comp90015.idxsrv.message.*;
@@ -125,7 +126,7 @@ public class Peer implements IPeer {
 			for (int i = 0; i < searchReply.hits.length; i++){
 				IndexElement hit = searchReply.hits[i];
 				InetAddress hitip = InetAddress.getByName(hit.ip);
-				SearchRecord searchRecord = new SearchRecord(hit.fileDescr, searchReply.seedCounts[i], hitip, hit.port,
+				SearchRecord searchRecord = new SearchRecord(hit.fileDescr, searchReply.seedCounts[i], idxAddress, idxPort,
 						idxSecret, hit.secret);
 				tgui.addSearchHit(searchReply.hits[i].filename, searchRecord);
 			}
