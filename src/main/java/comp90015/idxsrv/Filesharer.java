@@ -123,7 +123,7 @@ public class Filesharer {
 	    	}
 	    	if(cmd.hasOption("sp")) {
 	    		try {
-	    			port = Integer.parseInt(cmd.getOptionValue("sp"));
+	    			idxSrvPort = Integer.parseInt(cmd.getOptionValue("sp"));
 	    		} catch (NumberFormatException e) {
 	    			System.out.println("Warning: Could not parse supplied index server port number ["+cmd.getOptionValue("sp")+"]");
 	    		}
