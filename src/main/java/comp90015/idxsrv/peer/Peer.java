@@ -210,6 +210,7 @@ public class Peer implements IPeer {
 		}
 	}
 
+
 	private void writeMsg(BufferedWriter bufferedWriter, Message msg) throws IOException {
 		tgui.logDebug("sending: "+msg.toString());
 		bufferedWriter.write(msg.toString());
